@@ -1,2 +1,2 @@
-# insightviz
+# InsightViz
 Light weight visualization tool for use with Elastic Search
