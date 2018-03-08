@@ -47,3 +47,17 @@ def discover(request):
             'year': datetime.now().year,
         }
     )
+
+
+def exmanager(request):
+    """Renders the about page."""
+    assert isinstance(request, HttpRequest)
+    return render(
+        request,
+        'app/exman.html',
+        {
+            'title': 'Discover',
+            'message': 'Search and Find Your Data',
+            'year': datetime.now().year,
+        }
+    )
