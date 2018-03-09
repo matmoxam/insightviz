@@ -29,23 +29,31 @@ def get_indices():
 
 def search(index, terms_list):
 
-    terms = []
-    for k,v in terms_list.items():
-        terms.append(k)
-    field_dict = {"field": terms[3] + ".keyword"}
-    product_dict = {"terms": field_dict}
-    sources_list = [{"product": product_dict}]
-    composite_dict = {"sources": sources_list}
-    my_buckets_dict = {"composite": composite_dict}
-    aggs_dict = {"my_buckets": my_buckets_dict}
+    aggs_dict = {}
+    for k, v in terms_list.items():
+        field_dict = {"field": k + ".keyword"}
+        product_dict = {"terms": field_dict}
+
+        if 'type' in v:
+            if v['type'] == 'date':
+                field_dict = {"field": k, "interval": "1d"}
+                product_dict = {"date_histogram": field_dict}
+            elif v['type'] == 'float':
+                field_dict = {"field": k}
+                product_dict = {"terms": field_dict}
+        else:
+            print(v)
+
+        sources_list = [{k: product_dict}]
+        composite_dict = {"sources": sources_list}
+        my_buckets_dict = {"composite": composite_dict}
+        aggs_dict[k] = my_buckets_dict
+
     query_dict = {'size': 0, 'aggs': aggs_dict}
     json_string = json.dumps(query_dict)
-
-
-    #query = r'{ size: 0, "aggs":{ "my_buckets": { "composite" : { "sources" : [ { "product": { "terms" : { "field": "brands_selected.keyword" } } } ] } } } }'
-    results = es.search(index=index, body=json_string)
+    # query = r'{ size: 0, "aggs":{ "my_buckets": { "composite" : { "sources" : [ { "product": { "terms" : { "field": "brands_selected.keyword" } } } ] } } } }'
+    results = es.search(index=index, body=json_string, timeout="30000ms")
     return results
-
 
 
 def home(request):
@@ -60,7 +68,18 @@ def home(request):
 
     selected_index_fields = index_fields[selected_index]
 
-    results = search(selected_index, selected_index_fields)
+    nav_results = search(selected_index, selected_index_fields)
+
+    guided_nav = []
+    for item in nav_results['aggregations'].items():
+        dimension = item[0]
+        dim_dict = {dimension: []}
+
+        buckets = item[1]['buckets']
+        for bucket in buckets:
+            print(bucket)
+            dim_dict[dimension].append((bucket['key'][dimension],bucket['doc_count']))
+        guided_nav.append(dim_dict)
 
     return render(
         request,
@@ -70,10 +89,10 @@ def home(request):
             'year': datetime.now().year,
             'index_names': index_names,
             'index_fields': selected_index_fields,
-            'selected_index': selected_index
+            'selected_index': selected_index,
+            'guided_nav': guided_nav
         }
     )
-
 
 
 def contact(request):
