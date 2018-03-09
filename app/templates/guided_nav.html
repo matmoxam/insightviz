@@ -1,3 +1,10 @@
+<script type="text/javascript">
+    function cancel()
+    {
+     return false;
+    }
+
+</script>
 <div id="guided_nav">
 
     <form method="POST" action="/" />
@@ -12,11 +19,11 @@
     <div>
         <ul>
     {% for dim in guided_nav %}
-        {% for dim_name,dim_values in dim.items %}
-            <li>{{dim_name}}</li>
+        {% for dim_name, dim_values in dim.items %}
+            <li class="dimension">{{dim_name}}</li>
             <ul>
                 {% for val in dim_values %}
-                    <li>{{val.0}} ({{val.1}})</li>
+                    <li class="dimvalue"><a onclick="" href="/?F={{dim_name}}:{{val.0}}">{{val.0}} ({{val.1}})</a></li>
                 {% endfor %}
             </ul>
         {% endfor %}

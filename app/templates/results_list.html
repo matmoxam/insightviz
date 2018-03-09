@@ -1,0 +1,13 @@
+<div id="results_list">
+    <p>Count: {{total_records}}</p>
+    {% for doc in results_list %}
+    <div>
+        <ul>
+        {% for k,v in doc.items %}
+            <li>{{k}} : {{v}}</li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+
+</div>

@@ -1,0 +1,29 @@
+#guided_nav
+{
+    display: block;
+    float:left;
+    width: 400px;
+}
+
+#guided_nav .dimension
+{
+    font-size: 16px;
+}
+
+#guided_nav .dimvalue
+{
+    font-size: 12px;
+}
+
+#results_list
+{
+    display: block;
+    float: left;
+    width: 700px;
+}
+
+#results_list li
+{
+    font-size: 12px;
+}
+

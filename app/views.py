@@ -9,7 +9,12 @@ from django.template import RequestContext
 from datetime import datetime
 from elasticsearch import Elasticsearch
 
+
+class Filter(object):
+    pass
+
 es = Elasticsearch()
+
 
 
 def get_indices():
@@ -27,7 +32,7 @@ def get_indices():
     return index_names, indices
 
 
-def search(index, terms_list):
+def search(index, terms_list, filters_list):
 
     aggs_dict = {}
     for k, v in terms_list.items():
@@ -49,7 +54,17 @@ def search(index, terms_list):
         my_buckets_dict = {"composite": composite_dict}
         aggs_dict[k] = my_buckets_dict
 
-    query_dict = {'size': 0, 'aggs': aggs_dict}
+    filter_query_list = []
+    bool_dict = { 'bool': {'filter': filter_query_list} }
+    for filter in filters_list:
+        filter_query_list.append({'term': {filter.key + ".keyword": filter.value}})
+
+
+
+    #query_dict = {'size': 0, 'aggs': aggs_dict}
+    query_dict = {'aggs': aggs_dict}
+    if len(filters_list) > 0:
+        query_dict['query'] = bool_dict
     json_string = json.dumps(query_dict)
     # query = r'{ size: 0, "aggs":{ "my_buckets": { "composite" : { "sources" : [ { "product": { "terms" : { "field": "brands_selected.keyword" } } } ] } } } }'
     results = es.search(index=index, body=json_string, timeout="30000ms")
@@ -62,16 +77,30 @@ def home(request):
 
     index_names, index_fields = get_indices()
     selected_index = index_names[0]
+    filters_list = []
 
     if request.method == 'POST':
         selected_index = request.POST['index_choice']
+    if 'F' in request.GET:
+        vals = request.GET['F'].split(':')
+        filt = Filter()
+        filt.key = vals[0]
+        filt.value = vals[1]
+        filters_list.append(filt)
+
 
     selected_index_fields = index_fields[selected_index]
 
-    nav_results = search(selected_index, selected_index_fields)
+    results = search(selected_index, selected_index_fields, filters_list)
+    total_records = results['hits']['total']
 
     guided_nav = []
-    for item in nav_results['aggregations'].items():
+    results_list = []
+
+    for doc in results['hits']['hits']:
+        results_list.append(doc['_source'])
+
+    for item in results['aggregations'].items():
         dimension = item[0]
         dim_dict = {dimension: []}
 
@@ -90,7 +119,9 @@ def home(request):
             'index_names': index_names,
             'index_fields': selected_index_fields,
             'selected_index': selected_index,
-            'guided_nav': guided_nav
+            'guided_nav': guided_nav,
+            'results_list': results_list,
+            'total_records': total_records
         }
     )
 
