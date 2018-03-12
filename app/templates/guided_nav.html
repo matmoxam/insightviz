@@ -7,9 +7,8 @@
 </script>
 <div id="guided_nav">
 
-    <form method="POST" action="/" />
-        {% csrf_token %}
-        <select id="index_choice" name="index_choice" onchange="this.form.submit()">
+    <form method="GET" action="/" />
+        <select id="index_choice" name="I" onchange="this.form.submit()">
             {% for name in index_names %}
             <option {% if selected_index == name %} selected="selected"{% endif %} value="{{ name }}">{{ name }}</option>
             {% endfor %}
@@ -23,7 +22,7 @@
             <li class="dimension">{{dim_name}}</li>
             <ul>
                 {% for val in dim_values %}
-                    <li class="dimvalue"><a onclick="" href="/?F={{dim_name}}:{{val.0}}">{{val.0}} ({{val.1}})</a></li>
+                    <li class="dimvalue"><a onclick="" href="/?FK1={{dim_name}}&FV1={{val.0}}&I={{selected_index}}">{{val.0}} ({{val.1}})</a></li>
                 {% endfor %}
             </ul>
         {% endfor %}

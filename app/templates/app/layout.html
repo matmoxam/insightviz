@@ -35,6 +35,9 @@
     <link href="static/assets/css/font-awesome.min.css" rel="stylesheet">
     <link href="static/assets/css/google_fonts.css" rel="stylesheet">
 
+    {% block head_content %}
+    {% endblock %}
+
 </head>
 <body>
 
@@ -91,5 +94,20 @@
         	demo.initChartist();
     	});
 	</script>
+
+<script type="text/javascript">
+    $( document ).ready(function() {
+        path = window.location.pathname
+        console.log(window.location.pathname)
+        if(path == "/visualize")
+        {
+            $('#sidebar_visualize').attr("class","active");
+        }
+        else if(path == "/")
+        {
+            $('#sidebar_discover').attr("class","active");
+        }
+});
+</script>
 
 </html>

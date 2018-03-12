@@ -27,3 +27,12 @@
     font-size: 12px;
 }
 
+
+/* VISUALIZE */
+#viz_container {
+	min-width: 410px;
+	max-width: 900px;
+	height: 500px;
+	margin: 0 auto
+}
+
