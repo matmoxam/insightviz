@@ -44,6 +44,12 @@ class ElasticSearchBackEnd:
         for k, v in fields_dict.items():
             self.selected_index_fields.append(DocField(k, v))
 
+    def get_search_field(self, name):
+        for field in self.selected_index_fields:
+            if field.name == name:
+                return field
+        return None
+
     def get_search_fields(self):
         fields = []
         for field in self.selected_index_fields:
@@ -99,12 +105,40 @@ class ElasticSearchBackEnd:
             all_buckets[field.name] = {'composite': {'size': 10, 'sources': [{field.name: {'terms': {'field': field.analyzed_name}}}]}}
         return all_buckets
 
+    def get_field_list(self):
+        field_list = []
+        nav_fields = self.nav_state[ElasticSearchBackEnd.PARAM_AGGREGATE].split("|")
+        for field_name in nav_fields:
+            field = self.get_search_field(field_name)
+            field_list.append(field)
+        return field_list
+
+    def get_agg_bucket(self):
+        field_list = self.get_field_list()
+        sources_list = []
+        bucket = {"test_bucket": {'composite': {'size': 20000, 'sources': sources_list}}}
+        for field in field_list:
+            source = {field.name: {'terms': {'field': field.analyzed_name}}}
+            sources_list.append(source)
+        return bucket
+
     def get_query_string(self):
         query_dict = {'bool': {"filter": self.get_filter_list(), 'must': self.get_search_dict()}}
         aggs_dict = self.get_all_field_agg_buckets()
         query_dict = {'query': query_dict, 'aggs': aggs_dict}
         json_string = json.dumps(query_dict)
         return json_string
+
+    def get_visualization_query_string(self):
+        query_dict = {'bool': {"filter": self.get_filter_list(), 'must': self.get_search_dict()}}
+        aggs_dict = self.get_agg_bucket()
+        query_dict = {'size': 0, 'query': query_dict, 'aggs': aggs_dict}
+        json_string = json.dumps(query_dict)
+        return json_string
+
+    def visualize_query(self):
+        query_string = self.get_visualization_query_string()
+        return self.client.search(index=self.selected_index, body=query_string, timeout="30000ms")
 
     def get_indices(self):
         indices = {}

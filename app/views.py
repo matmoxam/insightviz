@@ -68,6 +68,18 @@ def contact(request):
 def visualize(request):
     """Renders the about page."""
     assert isinstance(request, HttpRequest)
+
+    backend = ElasticSearchBackEnd(request.GET)
+    query = backend.visualize_query()
+
+    series: [{
+        'name': 'Rating',
+        'data': [43934, 52503, 57177, 69658, 97031, 119931, 137133, 154175]
+    }]
+
+
+
+
     return render(
         request,
         'app/visualize.html',
