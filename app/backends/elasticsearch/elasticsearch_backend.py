@@ -24,6 +24,8 @@ class ElasticSearchBackEnd:
     PARAM_FILTER_VALUE = 'FV'
     PARAM_AGGREGATE = 'A'
     PARAM_INDEX = 'I'
+    PARAM_X = 'X'
+    PARAM_Y = 'Y'
 
     def __init__(self, query_params):
         self.client = Elasticsearch()
@@ -32,25 +34,36 @@ class ElasticSearchBackEnd:
         self.num_of_filters = 1
         self.selected_index = self.index_names[0]
         self.selected_index_fields = []
-        self.set_nav_state(query_params)
+        self.agg_axis_fields = []
         self.set_index_fields()
+        self.set_nav_state(query_params)
+
+
+
 
     def query(self):
         query_string = self.get_query_string()
         return self.client.search(index=self.selected_index, body=query_string, timeout="30000ms")
+
+    def get_numeric_fields(self):
+        field_list = []
+        for field in self.selected_index_fields:
+            if field.type == "float" or field.type == "long" or field.type == "int":
+                field_list.append(field)
+        return field_list
 
     def set_index_fields(self):
         fields_dict = self.indices[self.selected_index]
         for k, v in fields_dict.items():
             self.selected_index_fields.append(DocField(k, v))
 
-    def get_search_field(self, name):
+    def get_field_by_name(self, name):
         for field in self.selected_index_fields:
             if field.name == name:
                 return field
         return None
 
-    def get_search_fields(self):
+    def get_text_fields(self):
         fields = []
         for field in self.selected_index_fields:
             if field.type == "text":
@@ -80,6 +93,19 @@ class ElasticSearchBackEnd:
         if ElasticSearchBackEnd.PARAM_INDEX in query_params:
             self.selected_index = query_params[ElasticSearchBackEnd.PARAM_INDEX]
 
+        if ElasticSearchBackEnd.PARAM_X in query_params:
+            x_fields = query_params[ElasticSearchBackEnd.PARAM_X].split("|")
+            for field in x_fields:
+                self.agg_axis_fields.append(self.get_field_by_name(field))
+
+        if ElasticSearchBackEnd.PARAM_Y in query_params:
+            y_fields = query_params[ElasticSearchBackEnd.PARAM_Y].split("|")
+            for field in y_fields:
+                self.agg_axis_fields.append(self.get_field_by_name(field))
+
+
+
+
     def get_search_dict(self):
         """ Gets a dictionary for the search term syntax that will be converted into a query string
         :rtype: Dictionary
@@ -87,7 +113,7 @@ class ElasticSearchBackEnd:
 
         match = {"match_all": {}}
         if ElasticSearchBackEnd.PARAM_SEARCH in self.nav_state:
-            match = {'multi_match': {'query': self.nav_state[ElasticSearchBackEnd.PARAM_SEARCH], 'fields': self.get_search_fields()}}
+            match = {'multi_match': {'query': self.nav_state[ElasticSearchBackEnd.PARAM_SEARCH], 'fields': self.get_text_fields()}}
         return match
 
     def get_filter_list(self):
@@ -105,18 +131,19 @@ class ElasticSearchBackEnd:
             all_buckets[field.name] = {'composite': {'size': 10, 'sources': [{field.name: {'terms': {'field': field.analyzed_name}}}]}}
         return all_buckets
 
-    def get_field_list(self):
+    def get_viz_agg_list(self):
         field_list = []
-        nav_fields = self.nav_state[ElasticSearchBackEnd.PARAM_AGGREGATE].split("|")
-        for field_name in nav_fields:
-            field = self.get_search_field(field_name)
-            field_list.append(field)
+        if ElasticSearchBackEnd.PARAM_AGGREGATE in self.nav_state:
+            nav_fields = self.nav_state[ElasticSearchBackEnd.PARAM_AGGREGATE].split("|")
+            for field_name in self.agg_axis_fields:
+                field = self.get_field_by_name(field_name)
+                field_list.append(field)
         return field_list
 
     def get_agg_bucket(self):
-        field_list = self.get_field_list()
+        field_list = self.agg_axis_fields
         sources_list = []
-        bucket = {"test_bucket": {'composite': {'size': 20000, 'sources': sources_list}}}
+        bucket = {"viz_bucket": {'composite': {'size': 20000, 'sources': sources_list}}}
         for field in field_list:
             source = {field.name: {'terms': {'field': field.analyzed_name}}}
             sources_list.append(source)
@@ -146,9 +173,10 @@ class ElasticSearchBackEnd:
         try:
             indices = self.client.indices.get("*")
             for k, v in indices.items():
-                props = v['mappings']['doc']['properties']
-                indices[k] = props
-                index_names.append(k)
+                if not k == ".kibana":
+                    props = v['mappings']['doc']['properties']
+                    indices[k] = props
+                    index_names.append(k)
         except Exception as ex:
             print("ERROR: " + str(ex))
         return index_names, indices

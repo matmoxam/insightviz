@@ -70,23 +70,27 @@ def visualize(request):
     assert isinstance(request, HttpRequest)
 
     backend = ElasticSearchBackEnd(request.GET)
-    query = backend.visualize_query()
+    query_results = backend.visualize_query()
+    numeric_fields = backend.get_numeric_fields()
+    all_fields = backend.selected_index_fields
 
-    series: [{
+    if query_results:
+        query_results = query_results['aggregations']['viz_bucket']['buckets']
+
+    series = [{
         'name': 'Rating',
         'data': [43934, 52503, 57177, 69658, 97031, 119931, 137133, 154175]
     }]
-
-
-
 
     return render(
         request,
         'app/visualize.html',
         {
-            'title': 'Discover',
-            'message': 'Search and Find Your Data',
-            'year': datetime.now().year,
+            'series': series,
+            'selected_index': backend.selected_index,
+            'y_axis': numeric_fields,
+            'x_axis': all_fields,
+            'results': query_results
         }
     )
 

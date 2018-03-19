@@ -19,6 +19,25 @@
 
             <div class="col-md-12">
                 <div class="card">
+                    <h3>Y Axis</h3>
+                    <form method="GET" action="/visualize" />
+                        <select id="y_axis_choice" name="Y" onchange="">
+                            {% for field in y_axis %}
+                            <option value="{{ field.name }}">{{ field.name }}</option>
+                            {% endfor %}
+                        </select>
+
+
+                    <h3>X Axis</h3>
+
+                        <select id="x_axis_choice" name="X" onchange="">
+                            {% for field in x_axis %}
+                            <option value="{{ field.name }}">{{ field.name }}</option>
+                            {% endfor %}
+                        </select>
+                    <input name="submit" type="submit" value="Build" />
+                    </form>
+
                     <div id="viz_container"></div>
                     </div>
                 </div>
