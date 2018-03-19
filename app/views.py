@@ -77,9 +77,25 @@ def visualize(request):
     if query_results:
         query_results = query_results['aggregations']['viz_bucket']['buckets']
 
+    x_list = []
+    y_list = []
+
+    for bucket in query_results:
+        print(bucket)
+        values_dict = bucket['key']
+        x_list.append(values_dict[backend.agg_X_fields[0].name])
+        y_list.append(values_dict[backend.agg_Y_fields[0].name])
+
+    x_list.sort()
+    y_list.sort()
+
+    xAxis: {
+        "categories": x_list
+    }
+
     series = [{
-        'name': 'Rating',
-        'data': [43934, 52503, 57177, 69658, 97031, 119931, 137133, 154175]
+        'name': backend.agg_Y_fields[0].name,
+        'data': y_list
     }]
 
     return render(
@@ -90,7 +106,8 @@ def visualize(request):
             'selected_index': backend.selected_index,
             'y_axis': numeric_fields,
             'x_axis': all_fields,
-            'results': query_results
+            'x_series': json.dumps(x_list),
+            'y_series': json.dumps(y_list),
         }
     )
 

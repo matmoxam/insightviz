@@ -47,6 +47,10 @@
 
     <script type="text/javascript">
 
+        var x_series = '{{x_series|safe}}';
+        console.log(x_series[0]);
+
+
         Highcharts.chart('viz_container', {
 
         title: {
@@ -69,12 +73,14 @@
         },
 
         xAxis: {
-            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+             categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
         },
 
         series: [{
             name: 'Installation',
             data: [43934, 52503, 57177, 69658, 97031, 119931, 137133, 154175]
+
         }],
 
         responsive: {

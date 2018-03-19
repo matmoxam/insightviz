@@ -34,12 +34,10 @@ class ElasticSearchBackEnd:
         self.num_of_filters = 1
         self.selected_index = self.index_names[0]
         self.selected_index_fields = []
-        self.agg_axis_fields = []
+        self.agg_X_fields = []
+        self.agg_Y_fields = []
         self.set_index_fields()
         self.set_nav_state(query_params)
-
-
-
 
     def query(self):
         query_string = self.get_query_string()
@@ -96,12 +94,12 @@ class ElasticSearchBackEnd:
         if ElasticSearchBackEnd.PARAM_X in query_params:
             x_fields = query_params[ElasticSearchBackEnd.PARAM_X].split("|")
             for field in x_fields:
-                self.agg_axis_fields.append(self.get_field_by_name(field))
+                self.agg_X_fields.append(self.get_field_by_name(field))
 
         if ElasticSearchBackEnd.PARAM_Y in query_params:
             y_fields = query_params[ElasticSearchBackEnd.PARAM_Y].split("|")
             for field in y_fields:
-                self.agg_axis_fields.append(self.get_field_by_name(field))
+                self.agg_Y_fields.append(self.get_field_by_name(field))
 
 
 
@@ -141,7 +139,7 @@ class ElasticSearchBackEnd:
         return field_list
 
     def get_agg_bucket(self):
-        field_list = self.agg_axis_fields
+        field_list = self.agg_X_fields + self.agg_Y_fields
         sources_list = []
         bucket = {"viz_bucket": {'composite': {'size': 20000, 'sources': sources_list}}}
         for field in field_list:
@@ -164,8 +162,11 @@ class ElasticSearchBackEnd:
         return json_string
 
     def visualize_query(self):
-        query_string = self.get_visualization_query_string()
-        return self.client.search(index=self.selected_index, body=query_string, timeout="30000ms")
+        if len(self.agg_X_fields) > 0 and len(self.agg_Y_fields) > 0:
+            query_string = self.get_visualization_query_string()
+            return self.client.search(index=self.selected_index, body=query_string, timeout="30000ms")
+        else:
+            return None
 
     def get_indices(self):
         indices = {}
