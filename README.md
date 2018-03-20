@@ -2,6 +2,8 @@
 Light weight visualization, search, experience management and relevancy control tool for use with Elastic Search.
 
 ## Current Progress
-![test Image](https://github.com/matmoxam/insightviz/blob/master/build/insightviz_discover.png)
+
+![Search Page](https://github.com/matmoxam/insightviz/blob/master/misc/insightviz_discover.png)
+![Visualize Page](https://github.com/matmoxam/insightviz/blob/master/misc/insightviz_visualize.png)
 
 
