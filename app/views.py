@@ -73,28 +73,26 @@ def visualize(request):
     query_results = backend.visualize_query()
     numeric_fields = backend.get_numeric_fields()
     all_fields = backend.selected_index_fields
-
-    if query_results:
-        query_results = query_results['aggregations']['viz_bucket']['buckets']
-
     x_list = []
     y_list = []
+    if query_results:
+        query_results = query_results['aggregations']['viz_bucket']['buckets']
+        for bucket in query_results:
+            print(bucket)
+            values_dict = bucket['key']
+            x_list.append(values_dict[backend.agg_X_fields[0].name])
+            y_list.append(values_dict[backend.agg_Y_fields[0].name])
 
-    for bucket in query_results:
-        print(bucket)
-        values_dict = bucket['key']
-        x_list.append(values_dict[backend.agg_X_fields[0].name])
-        y_list.append(values_dict[backend.agg_Y_fields[0].name])
-
-    x_list.sort()
-    y_list.sort()
+        x_list.sort()
+        y_list.sort()
 
     xAxis: {
         "categories": x_list
     }
 
+
     series = [{
-        'name': backend.agg_Y_fields[0].name,
+        'name': "Y AXIS",
         'data': y_list
     }]
 
@@ -106,8 +104,9 @@ def visualize(request):
             'selected_index': backend.selected_index,
             'y_axis': numeric_fields,
             'x_axis': all_fields,
-            'x_series': json.dumps(x_list),
-            'y_series': json.dumps(y_list),
+            'x_series': x_list,
+            'y_series': y_list,
+            'index_names': backend.index_names
         }
     )
 

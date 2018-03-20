@@ -19,6 +19,16 @@
 
             <div class="col-md-12">
                 <div class="card">
+                    <div id="index_choice_id">
+                        <form method="GET" action="/visualize" />
+                            <select id="index_choice" name="I" onchange="this.form.submit()">
+                                {% for name in index_names %}
+                                <option {% if selected_index == name %} selected="selected"{% endif %} value="{{ name }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+
                     <h3>Y Axis</h3>
                     <form method="GET" action="/visualize" />
                         <select id="y_axis_choice" name="Y" onchange="">
@@ -35,6 +45,7 @@
                             <option value="{{ field.name }}">{{ field.name }}</option>
                             {% endfor %}
                         </select>
+                    <input type="hidden" name="I" value="{{selected_index}}" />
                     <input name="submit" type="submit" value="Build" />
                     </form>
 
@@ -47,7 +58,7 @@
 
     <script type="text/javascript">
 
-        var x_series = '{{x_series|safe}}';
+        var x_series = {{x_series|safe}};
         console.log(x_series[0]);
 
 
@@ -74,13 +85,11 @@
 
         xAxis: {
              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
         },
 
         series: [{
             name: 'Installation',
             data: [43934, 52503, 57177, 69658, 97031, 119931, 137133, 154175]
-
         }],
 
         responsive: {

@@ -36,8 +36,8 @@ class ElasticSearchBackEnd:
         self.selected_index_fields = []
         self.agg_X_fields = []
         self.agg_Y_fields = []
-        self.set_index_fields()
         self.set_nav_state(query_params)
+        self.set_index_fields()
 
     def query(self):
         query_string = self.get_query_string()
