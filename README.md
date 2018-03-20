@@ -1,2 +1,6 @@
 # InsightViz
-Light weight visualization tool for use with Elastic Search
+Light weight visualization, search, experience management and relevancy control tool for use with Elastic Search.
+
+
+
+
