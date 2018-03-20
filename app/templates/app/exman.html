@@ -1,0 +1,28 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+
+<h2>Experience Management</h2>
+<h3>Create custom search experiences for your users</h3>
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+
+<div id="app">
+ <p>Vue: [[ message ]]</p>
+ <p>View: {{ message }}</p>
+ <button type="button">Click Me!</button>
+</div>
+
+<script type="text/javascript">
+ var app = new Vue({
+  delimiters: ['[[', ']]'],
+  el: '#app',
+  data: {
+    message: 'Hello Vue!'
+  }
+})
+
+</script>
+
+
+{% endblock %}
